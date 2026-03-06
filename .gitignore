@@ -1,0 +1,9 @@
+node_modules/
+.env
+logs/
+*.logs
+npm-debug.log*
+
+# Specifically ignore the frontend-vue build output
+/frontend-vue/dist/
+
