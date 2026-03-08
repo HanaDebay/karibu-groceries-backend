@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 const User = require('./models/User');
+const dns = require("dns");
+
+// Fix for querySrv ECONNREFUSED: Force Google DNS to resolve MongoDB Atlas
+try { dns.setServers(['8.8.8.8', '8.8.4.4']); } catch (e) { console.log("Could not set custom DNS"); }
 
 // Configuration
 const DIRECTOR_EMAIL = "orban@kgl.co.ug";
@@ -9,7 +13,9 @@ const DIRECTOR_PASSWORD = "1234";
 
 const seedDirector = async () => {
     try {
-        await mongoose.connect(process.env.DATABASE_URI);
+        await mongoose.connect(process.env.MONGO_URI || process.env.DATABASE_URI, {
+            family: 4, // Force IPv4 to resolve querySrv ECONNREFUSED issues
+        });
         console.log("Connected to DB...");
 
         // Check if Director exists

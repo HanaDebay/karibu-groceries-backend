@@ -1,4 +1,8 @@
 //import libraries
+const dns = require("dns");
+// Fix for querySrv ECONNREFUSED: Force Google DNS to resolve MongoDB Atlas
+try { dns.setServers(['8.8.8.8', '8.8.4.4']); } catch (e) { console.log("Could not set custom DNS"); }
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path")
@@ -12,9 +16,15 @@ const cors = require("cors");
 //loads environment variables form .env file
 require("dotenv").config();
 
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined. Please check your .env file.");
+const DEFAULT_JWT_SECRET_PLACEHOLDERS = ["your_secure_secret_key_123", "a-very-secure-and-random-secret-key-for-jwt"];
+if (!process.env.JWT_SECRET || DEFAULT_JWT_SECRET_PLACEHOLDERS.includes(process.env.JWT_SECRET)) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined or is set to a default placeholder.");
+  console.error("Please generate a strong, unique secret and set it in your .env file.");
+  console.error("You can generate one by running: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+  process.exit(1);
 }
+//run this command in the terminal to get the secrete 
+//node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
